@@ -112,17 +112,21 @@ export function slugify(value) {
   return value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-export const catalog = catalogGroups.flatMap((group) => group.products.map((name, index) => ({
-  id: `${group.slug}-${slugify(name)}`,
-  slug: slugify(name),
-  name,
-  group: group.name,
-  groupSlug: group.slug,
-  description: group.description,
-  image: `/assets/products/${group.slug}-${slugify(name)}.jpg`,
-  status: /pre-order/i.test(name) ? "Pre-order" : /stock/i.test(name) ? "In stock" : "Quote required",
-  featured: index === 0 || /hybrid|kettle|linen white|towel 100/i.test(name),
-})));
+export const catalog = catalogGroups.flatMap((group) => group.products.map((name, index) => {
+  const id = `${group.slug}-${slugify(name)}`;
+  return {
+    id,
+    slug: slugify(name),
+    name,
+    group: group.name,
+    groupSlug: group.slug,
+    description: group.description,
+    image: `/assets/products/${id}.jpg`,
+    thumbnail: `/assets/products/${id}-640.jpg`,
+    status: /pre-order/i.test(name) ? "Pre-order" : /stock/i.test(name) ? "In stock" : "Quote required",
+    featured: index === 0 || /hybrid|kettle|linen white|towel 100/i.test(name),
+  };
+}));
 
 export const catalogCategories = catalogGroups.map(({ products, ...group }) => ({ ...group, count: products.length }));
 
@@ -158,6 +162,7 @@ export const eventArchive = [
   title,
   type,
   image: `/assets/events/event-${String(index + 1).padStart(2, "0")}.jpg`,
+  thumbnail: `/assets/events/event-${String(index + 1).padStart(2, "0")}-640.jpg`,
 }));
 
 export const educationLibrary = [

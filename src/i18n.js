@@ -1,4 +1,4 @@
-export const supportedLanguages = ["en", "km"];
+export const supportedLanguages = ["en", "km", "zh"];
 
 export const translations = {
   en: {
@@ -25,6 +25,18 @@ export const translations = {
     education: { eyebrow: "ចំណេះដឹងពី SDC", title: "ជំនាញអនុវត្តសម្រាប់បដិសណ្ឋារកិច្ចកាន់តែប្រសើរ។", summary: "មេរៀនពិតពីបណ្ណាល័យវីដេអូ SDC ដែលងាយស្រួលស្វែងរក រៀន និងចែករំលែកជាមួយក្រុមការងារ។", featured: "មេរៀនពិសេស", learn: "រៀនជាមួយ SDC", library: "បណ្ណាល័យវីដេអូ", chooseTopic: "ជ្រើសរើសប្រធានបទ។", topics: { All: "ទាំងអស់", Housekeeping: "សេវាបន្ទប់", Products: "ផលិតផល", Factory: "រោងចក្រ", Business: "អាជីវកម្ម", Events: "ព្រឹត្តិការណ៍" } },
     home: { eyebrow: "ដៃគូផ្គត់ផ្គង់បដិសណ្ឋារកិច្ចនៅកម្ពុជា", summary: "ចាប់ពីក្រណាត់គ្រែដ៏ល្អប្រណិត រហូតដល់សម្ភារៈភ្ញៀវមានឡូហ្គោ—អ្វីគ្រប់យ៉ាងសម្រាប់បង្កើតបទពិសោធន៍ស្នាក់នៅដែលគួរឱ្យចងចាំ។", catalogEyebrow: "បញ្ជីផលិតផល SDC", catalogTitle: "គ្រប់យ៉ាងសម្រាប់គ្រប់ការស្នាក់នៅ។", catalogText: "មើលរូបភាពផលិតផល SDC ពិត សម្រាប់សម្ភារៈបន្ទប់ ភួយកម្រាល សម្ភារៈបន្ទប់ទឹក និងឧបករណ៍សណ្ឋាគារ។" },
   },
+  zh: {
+    language: { label: "语言", english: "EN", khmer: "ខ្មែរ", chinese: "中文" },
+    nav: { home: "首页", products: "产品", events: "活动", promotions: "优惠", education: "知识中心", contact: "联系我们" },
+    action: { requestQuote: "获取报价", exploreProducts: "浏览产品", exploreLessons: "浏览全部课程", viewProduct: "查看产品", backToProducts: "返回产品", talkToSdc: "联系 SDC", clearFilters: "清除筛选", showAllProducts: "显示全部产品", watchLesson: "观看课程", viewArchive: "查看全部活动" },
+    status: { "Quote required": "获取报价", "In stock": "现货", "Pre-order": "预订" },
+    products: { eyebrow: "完整产品目录", title: "满足酒店每个空间的需求。", summary: "浏览 SDC 原始酒店用品目录及真实产品图片。价格和最终规格请通过报价确认。", search: "按产品名称搜索", allCollections: "全部系列", allProducts: "全部产品", photography: "SDC 原始产品图片", noResults: "没有匹配的产品", noResultsText: "请尝试其他搜索词或产品系列。" },
+    custom: { eyebrow: "品牌定制", title: "将您的品牌融入每一个细节。", summary: "探索 SDC 原始案例中，为酒店、度假村和机构制作的品牌酒店用品。", cta: "让每一次宾客体验都留下您的印记。" },
+    coverage: { eyebrow: "柬埔寨服务网络", title: "覆盖柬埔寨各地的酒店支持。", summary: "了解 SDC 酒店用品供应网络覆盖的目的地和省份。", cta: "咨询送达您所在目的地的服务。" },
+    events: { eyebrow: "行业活动档案", title: "活动、培训与社区。", summary: "完整了解 SDC 的展览、产品发布、竞赛、合作与客房服务培训。", featured: "精选活动", supporting: "连接柬埔寨酒店行业的供应商、运营者和合作伙伴。" },
+    education: { eyebrow: "SDC 知识中心", title: "实用技能，成就更好的酒店服务。", summary: "来自 SDC 原始视频资料库的真实课程，方便您与团队学习和分享。", featured: "精选课程", learn: "与 SDC 一起学习", library: "视频资料库", chooseTopic: "选择主题。", topics: { All: "全部", Housekeeping: "客房服务", Products: "产品", Factory: "工厂", Business: "商业", Events: "活动" } },
+    home: { eyebrow: "柬埔寨酒店用品合作伙伴", summary: "从精致床品到品牌宾客用品，为您的酒店打造难忘住宿体验所需的一切。", catalogEyebrow: "SDC 产品目录", catalogTitle: "为每一次入住准备的一切。", catalogText: "浏览真实 SDC 产品图片，包括客房用品、布草、卫浴用品与酒店设备。" },
+  },
 };
 
 export function getInitialLanguage() {
@@ -36,5 +48,8 @@ export function getInitialLanguage() {
     }
   })();
   if (supportedLanguages.includes(storedLanguage)) return storedLanguage;
-  return navigator.language.toLowerCase().startsWith("km") ? "km" : "en";
+  const browserLanguage = navigator.language.toLowerCase();
+  if (browserLanguage.startsWith("km")) return "km";
+  if (browserLanguage.startsWith("zh")) return "zh";
+  return "en";
 }

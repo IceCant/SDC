@@ -39,15 +39,22 @@ async function fetchText(path) {
   return response.text();
 }
 
-async function saveAsJpeg(sourceUrl, outputPath, temporaryDirectory) {
+function convertToJpeg(sourcePath, outputPath, longestEdge, quality) {
+  const resolvedOutputPath = outputPath instanceof URL ? fileURLToPath(outputPath) : outputPath;
+  const conversion = spawnSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", quality, "-Z", longestEdge, sourcePath, "--out", resolvedOutputPath], { encoding: "utf8" });
+  if (conversion.status !== 0) throw new Error(`Could not convert image: ${conversion.stderr || conversion.stdout}`);
+}
+
+async function saveImageVariants(sourceUrl, outputPath, temporaryDirectory) {
   const response = await fetch(sourceUrl);
   if (!response.ok) throw new Error(`Could not download ${sourceUrl}: ${response.status}`);
 
   const rawPath = join(temporaryDirectory, `source-${crypto.randomUUID()}`);
   await writeFile(rawPath, Buffer.from(await response.arrayBuffer()));
   const resolvedOutputPath = outputPath instanceof URL ? fileURLToPath(outputPath) : outputPath;
-  const conversion = spawnSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", "82", "-Z", "1600", rawPath, "--out", resolvedOutputPath], { encoding: "utf8" });
-  if (conversion.status !== 0) throw new Error(`Could not convert ${sourceUrl}: ${conversion.stderr || conversion.stdout}`);
+  const thumbnailPath = resolvedOutputPath.replace(/\.jpg$/, "-640.jpg");
+  convertToJpeg(rawPath, resolvedOutputPath, "1280", "74");
+  convertToJpeg(rawPath, thumbnailPath, "640", "68");
 }
 
 async function main() {
@@ -75,7 +82,7 @@ async function main() {
       }
 
       for (const [index, product] of products.entries()) {
-        await saveAsJpeg(sourceImages[index], new URL(`${product.id}.jpg`, productDirectory), temporaryDirectory);
+        await saveImageVariants(sourceImages[index], new URL(`${product.id}.jpg`, productDirectory), temporaryDirectory);
       }
       console.log(`Saved ${products.length} original thumbnails for ${category.name}`);
     }
@@ -87,7 +94,7 @@ async function main() {
     }
 
     for (const [index, sourceUrl] of eventImages.entries()) {
-      await saveAsJpeg(sourceUrl, new URL(`event-${String(index + 1).padStart(2, "0")}.jpg`, eventDirectory), temporaryDirectory);
+      await saveImageVariants(sourceUrl, new URL(`event-${String(index + 1).padStart(2, "0")}.jpg`, eventDirectory), temporaryDirectory);
     }
     console.log(`Saved ${eventImages.length} original event thumbnails`);
 
@@ -117,7 +124,7 @@ async function main() {
 
       for (const [index, sourceUrl] of sourceImages.entries()) {
         const fileNumber = String(index + 1).padStart(2, "0");
-        await saveAsJpeg(sourceUrl, new URL(`${visualDirectory.filePrefix}-${fileNumber}.jpg`, visualDirectory.directory), temporaryDirectory);
+        await saveImageVariants(sourceUrl, new URL(`${visualDirectory.filePrefix}-${fileNumber}.jpg`, visualDirectory.directory), temporaryDirectory);
       }
       console.log(`Saved ${sourceImages.length} original ${visualDirectory.label} thumbnails`);
     }
