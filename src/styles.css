@@ -31,7 +31,7 @@ main { animation: page-in .36s ease both; }
 @keyframes page-in { from { opacity: .55; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
 .site-shell { overflow-x: clip; }
-.site-header { height: 82px; padding: 0 clamp(24px, 4vw, 64px); display: grid; grid-template-columns: 230px 1fr 180px; align-items: center; gap: 30px; background: rgba(255,255,255,.92); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 8px 30px rgba(0,0,0,.035); }
+.site-header { height: 82px; padding: 0 clamp(24px, 4vw, 64px); display: grid; grid-template-columns: 230px 1fr auto; align-items: center; gap: 30px; background: rgba(255,255,255,.92); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 8px 30px rgba(0,0,0,.035); }
 .brand { border: 0; background: transparent; display: flex; align-items: center; gap: 12px; padding: 0; text-align: left; }
 .brand img { width: 48px; height: 58px; object-fit: contain; }
 .brand span { display: flex; flex-direction: column; font-size: 9px; letter-spacing: .18em; color: #373737; }
@@ -41,6 +41,10 @@ main { animation: page-in .36s ease both; }
 .nav button { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; position: relative; }
 .nav button::after { content: ""; position: absolute; left: 0; right: 100%; bottom: 2px; height: 2px; background: var(--red); transition: right .25s ease; }
 .nav button:hover::after, .nav button.active::after { right: 0; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.language-switch { display: inline-flex; align-items: center; padding: 3px; border: 1px solid #ded9d2; border-radius: 99px; background: #f7f4f0; }
+.language-switch button { min-height: 34px; padding: 0 10px; border: 0; border-radius: 99px; background: transparent; color: #706b66; font-size: 11px; font-weight: 700; letter-spacing: .04em; transition: background .2s ease, color .2s ease, box-shadow .2s ease; }
+.language-switch button.selected { background: white; color: var(--ink); box-shadow: 0 2px 7px rgba(0,0,0,.1); }
 .header-cta { border: 0; border-radius: 99px; background: var(--red); color: white; padding: 15px 22px; transition: transform .2s ease, background .2s ease; }
 .header-cta:hover { transform: translateY(-2px); background: var(--red-dark); }
 .menu-button { display: none; border: 0; background: transparent; margin-left: auto; }
@@ -68,7 +72,7 @@ h1 { font: 500 clamp(46px, 4.6vw, 68px)/.98 var(--serif); letter-spacing: -.045e
 .button-dark { background: var(--ink); color: white; }
 .hero-signoff { margin: 28px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: .27em; color: rgba(255,255,255,.72); }
 .hero-media { min-width: 0; overflow: hidden; }
-.hero-media video { width: 100%; height: 100%; object-fit: cover; object-position: 55% center; }
+.hero-media video, .hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 55% center; }
 
 .section { padding: 110px clamp(24px, 5vw, 76px); }
 .section-heading { display: grid; grid-template-columns: 1fr minmax(280px, 470px); align-items: end; gap: 70px; max-width: 1380px; margin: 0 auto 48px; }
@@ -217,8 +221,9 @@ h2 { font: 500 clamp(38px, 4vw, 60px)/1.04 var(--serif); letter-spacing: -.04em;
 .topic-filters button:hover { border-color: var(--ink); color: var(--ink); }
 .topic-filters button.selected { background: var(--red); border-color: var(--red); color: white; }
 .learning-grid { max-width: 1380px; margin: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 46px 18px; }
-.learning-grid a { position: relative; padding-bottom: 18px; border-bottom: 1px solid #ded9d3; transition: transform .25s ease; }
+.learning-grid a { position: relative; padding-bottom: 18px; border-bottom: 1px solid #ded9d3; transition: transform .25s ease; opacity: 0; animation: lesson-in .48s cubic-bezier(.2,.65,.25,1) both; animation-delay: calc(var(--item-index, 0) * 55ms); }
 .learning-grid a:hover { transform: translateY(-4px); }
+@keyframes lesson-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 .learning-image { display: block; aspect-ratio: 16 / 9; position: relative; overflow: hidden; margin-bottom: 18px; background: #eee; }
 .learning-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
 .learning-grid a:hover img { transform: scale(1.04); }
@@ -342,7 +347,7 @@ footer button:hover { color: white; }
 .success-state p:not(.eyebrow) { color: #666; max-width: 400px; margin: 0 auto 28px; line-height: 1.6; }
 
 @media (max-width: 1050px) {
-  .site-header { grid-template-columns: 180px 1fr 155px; }
+  .site-header { grid-template-columns: 180px 1fr auto; }
   .nav { gap: 16px; }
   .hero { grid-template-columns: 57% 43%; }
   .hero-copy::after { right: -70px; width: 140px; }
@@ -357,10 +362,11 @@ footer button:hover { color: white; }
 }
 
 @media (max-width: 780px) {
-  .site-header { height: 72px; grid-template-columns: 1fr auto; padding: 0 20px; }
+  .site-header { height: 72px; grid-template-columns: 1fr auto auto; gap: 14px; padding: 0 20px; }
   .brand img { width: 40px; height: 48px; }
   .brand span { display: none; }
   .header-cta { display: none; }
+  .language-switch button { min-height: 32px; padding: 0 8px; }
   .menu-button { display: grid; }
   .nav { position: absolute; left: 0; right: 0; top: 72px; background: white; flex-direction: column; align-items: stretch; gap: 0; padding: 12px 24px 24px; transform: translateY(-130%); opacity: 0; pointer-events: none; transition: transform .25s ease, opacity .25s ease; box-shadow: 0 18px 30px rgba(0,0,0,.1); }
   .nav-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
@@ -453,5 +459,6 @@ footer button:hover { color: white; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation: none !important; }
+  .learning-grid a { opacity: 1; transform: none; }
 }
