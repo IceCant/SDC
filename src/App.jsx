@@ -7,6 +7,7 @@ import {
   careers, catalog, catalogCategories, customLogoProjects, destinations, educationLibrary,
   eventArchive, findProductBySlug,
 } from "./catalog";
+import sourceContent from "./source-content-app.json";
 import { getInitialLanguage, translations } from "./i18n";
 
 const LanguageContext = createContext(null);
@@ -21,7 +22,9 @@ const promotions = [
   { name: "Kettle Set 1.2L", description: "The set includes one 1.2-litre kettle, one welcome tray, two black cups and two coffee spoons.", image: "/assets/kettle-promotion.png" },
   { name: "Lady Americana Mattress", description: "The Royal Elite is a premium Euro-top mattress combining Serene Gel Foam and individually encased coils for balanced comfort and support.", image: "/assets/mattress-promotion.jpg" },
 ];
-const clients = [1, 2, 3, 4, 5, 6].map((number) => `/assets/client-${number}.${number === 6 ? "png" : "jpg"}`);
+const productSources = new Map(sourceContent.products.map((product) => [product.slug, product]));
+const clientLogos = Array.from({ length: sourceContent.clientCount }, (_, index) => `/assets/clients/client-${String(index + 1).padStart(3, "0")}.jpg`);
+const clients = [...clientLogos, ...clientLogos].map((source, index) => `${source}#loop-${index}`);
 const supportedPages = new Set(["products", "product", "custom", "coverage", "promotions", "events", "education", "careers", "contact", "terms"]);
 const pageTitles = { home: "Hospitality, Elevated", products: "Products", custom: "Custom Hotel Logos", coverage: "Coverage Across Cambodia", promotions: "Promotions", events: "Events", education: "Education", careers: "Careers", contact: "Contact", terms: "Terms & Conditions" };
 
@@ -116,9 +119,17 @@ function ProductPage({ slug, onQuote }) {
   const { copy } = useLanguage();
   const product = findProductBySlug(slug);
   if (!product) return <NotFoundPage />;
-  const exactKettle = product.name === "Kettle 1.2L with Tray Set";
-  const related = catalog.filter((item) => item.groupSlug === product.groupSlug && item.id !== product.id).slice(0, 4);
-  return <><section className="product-detail"><button className="back-link" onClick={() => goTo("products")}><ArrowLeft size={17} />{copy.action.backToProducts}</button><div className="product-detail-grid"><div className="detail-media"><img src={product.image} alt={product.name} /><span>{copy.products.photography}</span></div><div className="detail-copy"><p className="eyebrow">{product.group}</p><h1>{product.name}</h1><p className="detail-lead">{product.description}</p><div className="detail-facts"><p><small>Availability</small><strong>{copy.status[product.status]}</strong></p><p><small>Pricing</small><strong>{copy.action.requestQuote}</strong></p><p><small>Support</small><strong>Phnom Penh team</strong></p></div>{exactKettle ? <div className="spec-box"><h3>Original specifications</h3><ul><li>Strong polished melamine welcome tray</li><li>Black finish</li><li>Tray: 42 × 30 × 3 cm</li><li>Integrated kettle space</li></ul></div> : <div className="spec-box"><h3>Specifications on request</h3><p>The original website lists this product without reliable dimensions or material details. Contact SDC for current sizes, finishes, minimum quantities and lead time.</p></div>}<button className="button button-red" onClick={() => onQuote(product.name)}>{copy.action.requestQuote} <ArrowRight size={18} /></button></div></div></section>{related.length > 0 && <section className="related-section"><p className="eyebrow">Same collection</p><h2>You may also need.</h2><div className="product-grid compact">{related.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}</>;
+
+  const sourceProduct = productSources.get(product.slug);
+  const gallery = Array.from({ length: sourceProduct?.galleryCount ?? 0 }, (_, index) => ({
+    image: `/assets/product-galleries/${product.slug}-${String(index + 1).padStart(2, "0")}.jpg`,
+    thumbnail: `/assets/product-galleries/${product.slug}-${String(index + 1).padStart(2, "0")}-360.jpg`,
+  })) ?? [];
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(0);
+  useEffect(() => setSelectedGalleryImage(0), [product.slug]);
+  const selectedImage = gallery[selectedGalleryImage] ?? { image: product.image, thumbnail: product.thumbnail };
+
+  return <section className="product-detail"><button className="back-link" onClick={() => goTo("products")}><ArrowLeft size={17} />{copy.action.backToProducts}</button><div className="product-detail-grid"><div><div className="detail-media"><img src={selectedImage.image} alt={product.name} /></div>{gallery.length > 1 && <div className="product-gallery" aria-label={`${product.name} image gallery`}>{gallery.map((image, index) => <button className={index === selectedGalleryImage ? "selected" : ""} key={image.image} onClick={() => setSelectedGalleryImage(index)} aria-label={`View image ${index + 1}`} aria-pressed={index === selectedGalleryImage}><img src={image.thumbnail} alt="" loading="lazy" decoding="async" /></button>)}</div>}</div><div className="detail-copy"><p className="eyebrow">{product.group}</p><h1>{product.name}</h1><div className="detail-facts"><p><small>{sourceProduct?.price ? "Source price" : "Pricing"}</small><strong>{sourceProduct?.price ?? copy.action.requestQuote}</strong></p><p><small>Support</small><strong>Phnom Penh team</strong></p></div>{sourceProduct?.lines.length > 0 && <div className="spec-box"><h3>Original specifications</h3><ul>{sourceProduct.lines.map((line) => <li key={line}>{line.replace(/^_/, "")}</li>)}</ul></div>}<button className="button button-red" onClick={() => onQuote(product.name)}>{copy.action.requestQuote} <ArrowRight size={18} /></button></div></div></section>;
 }
 
 function SpecialCollections() {
