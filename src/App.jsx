@@ -22,12 +22,13 @@ const promotions = [
   { name: "Lady Americana Mattress", description: "The Royal Elite is a premium Euro-top mattress combining Serene Gel Foam and individually encased coils for balanced comfort and support.", image: "/assets/mattress-promotion.jpg" },
 ];
 const clients = [1, 2, 3, 4, 5, 6].map((number) => `/assets/client-${number}.${number === 6 ? "png" : "jpg"}`);
+const supportedPages = new Set(["products", "product", "custom", "coverage", "promotions", "events", "education", "careers", "contact", "terms"]);
+const pageTitles = { home: "Hospitality, Elevated", products: "Products", custom: "Custom Hotel Logos", coverage: "Coverage Across Cambodia", promotions: "Promotions", events: "Events", education: "Education", careers: "Careers", contact: "Contact", terms: "Terms & Conditions" };
 
 function parseHashRoute() {
   const route = window.location.hash.replace(/^#\/?/, "").split("?")[0].replace(/\/$/, "");
   if (!route || route === "home") return { page: "home", slug: null };
   const [page, slug] = route.split("/");
-  const supportedPages = new Set(["products", "product", "custom", "coverage", "promotions", "events", "education", "careers", "contact", "terms"]);
   if (!supportedPages.has(page)) return { page: "not-found", slug: null };
   return { page, slug: slug || null };
 }
@@ -220,13 +221,13 @@ export function App() {
   const [quote, setQuote] = useState({ open: false, interest: "" });
   const openQuote = (interest = "") => setQuote({ open: true, interest });
   useEffect(() => {
+    document.documentElement.lang = language;
     try {
       window.localStorage.setItem("sdc-language", language);
     } catch {}
   }, [language]);
   useEffect(() => {
     const product = route.page === "product" ? findProductBySlug(route.slug) : null;
-    const pageTitles = { home: "Hospitality, Elevated", products: "Products", custom: "Custom Hotel Logos", coverage: "Coverage Across Cambodia", promotions: "Promotions", events: "Events", education: "Education", careers: "Careers", contact: "Contact", terms: "Terms & Conditions" };
     document.title = `${product?.name ?? pageTitles[route.page] ?? "Page not found"} | SDC Hotel Supply`;
   }, [route]);
   const pages = { home: <HomePage onQuote={openQuote} />, products: <ProductsPage />, product: <ProductPage slug={route.slug} onQuote={openQuote} />, custom: <ListPage type="custom" />, coverage: <ListPage type="coverage" />, promotions: <PromotionsPage onQuote={openQuote} />, events: <EventsPage />, education: <EducationPage />, careers: <CareersPage />, contact: <ContactPage onQuote={openQuote} />, terms: <TermsPage />, "not-found": <NotFoundPage /> };
