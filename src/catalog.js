@@ -119,7 +119,7 @@ export const catalog = catalogGroups.flatMap((group) => group.products.map((name
   group: group.name,
   groupSlug: group.slug,
   description: group.description,
-  image: group.image,
+  image: `/assets/products/${group.slug}-${slugify(name)}.jpg`,
   status: /pre-order/i.test(name) ? "Pre-order" : /stock/i.test(name) ? "In stock" : "Quote required",
   featured: index === 0 || /hybrid|kettle|linen white|towel 100/i.test(name),
 })));
@@ -144,17 +144,21 @@ export const destinations = [
 ];
 
 export const eventArchive = [
-  ["Cambodia Second International Trade Exhibition", "Trade exhibition", "/assets/event-trade-exhibition.jpg"],
-  ["Charity Mission and Hygiene", "Community", "/assets/event-charity.jpg"],
-  ["Housekeeping Training (2022)", "Training", "/assets/event-training.jpg"],
-  ["SDC Exhibition Products Show 2022", "Exhibition", "/assets/event-exhibition.jpg"],
-  ["Housekeeping Training (2023)", "Training", "/assets/event-training.jpg"],
-  ["M.O.U Between SDC and CHA 2024", "Partnership", "/assets/event-trade-exhibition.jpg"],
-  ["SDC Launching Hybrid Mattress Event 2024", "Product launch", "/assets/mattress-promotion.jpg"],
-  ["Cambodian Young Architect Award 2023", "Industry", "/assets/event-exhibition.jpg"],
-  ["Cambodia National Hospitality Competition 2024", "Competition", "/assets/event-trade-exhibition.jpg"],
-  ["SDC Exhibition", "Exhibition", "/assets/event-exhibition.jpg"],
-].map(([title, type, image]) => ({ title, type, image }));
+  ["Cambodia Second International Trade Exhibition", "Trade exhibition"],
+  ["Charity Mission and Hygiene", "Community"],
+  ["Housekeeping Training (2022)", "Training"],
+  ["SDC Exhibition Products Show 2022", "Exhibition"],
+  ["Housekeeping Training (2023)", "Training"],
+  ["M.O.U Between SDC and CHA 2024", "Partnership"],
+  ["SDC Launching Hybrid Mattress Event 2024", "Product launch"],
+  ["Cambodian Young Architect Award 2023", "Industry"],
+  ["Cambodia National Hospitality Competition 2024", "Competition"],
+  ["SDC Exhibition", "Exhibition"],
+].map(([title, type], index) => ({
+  title,
+  type,
+  image: `/assets/events/event-${String(index + 1).padStart(2, "0")}.jpg`,
+}));
 
 export const educationLibrary = [
   ["Towel Folding Swan — Housekeeping Towel Art", "LiXTFv__NRw", "Housekeeping"],

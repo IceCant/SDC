@@ -14,3 +14,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Use the bold red editorial direction selected from the September 2026 redesign concepts.
 - Prioritize a strong first impression for a family presentation while keeping the experience credible for hospitality procurement buyers.
 - Keep product discovery and the quote journey as the two primary user paths.
+- Do not use AI-generated imagery for this project. Prefer the original SDC website media and original platform thumbnails, with clear, accurate alt text.
