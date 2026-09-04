@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft, ArrowRight, Briefcase, CheckCircle, EnvelopeSimple, List, MagnifyingGlass,
   MapPin, Package, Phone, Play, SealCheck, X,
@@ -49,13 +49,26 @@ function Header({ activePage, onQuote }) {
 
 function QuoteModal({ isOpen, onClose, interest = "" }) {
   const [isSent, setIsSent] = useState(false);
+  const modalRef = useRef(null);
   useEffect(() => {
-    if (!isOpen) setIsSent(false);
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    if (!isOpen) {
+      setIsSent(false);
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+    requestAnimationFrame(() => modalRef.current?.querySelector("input, button")?.focus());
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen]);
   if (!isOpen) return null;
-  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section className="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-title" onMouseDown={(event) => event.stopPropagation()}>
+  return <div className="modal-backdrop" role="presentation" onMouseDown={onClose}><section ref={modalRef} className="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-title" onMouseDown={(event) => event.stopPropagation()}>
     <button className="modal-close" onClick={onClose} aria-label="Close quote form"><X size={23} /></button>
     {isSent ? <div className="success-state"><CheckCircle size={56} weight="fill" /><p className="eyebrow">Message ready</p><h2 id="quote-title">Thank you.</h2><p>This prototype has validated your request. The production site can connect this form to email, WhatsApp or a CRM.</p><button className="button button-dark" onClick={onClose}>Back to the website</button></div> : <><p className="eyebrow">Start a conversation</p><h2 id="quote-title">Request a quote</h2><p>Tell us what your property needs. The SDC team will help match products, quantities and branding.</p><form className="quote-form" onSubmit={(event) => { event.preventDefault(); setIsSent(true); }}><label>Name<input name="name" required placeholder="Your name" /></label><label>Hotel or company<input name="company" required placeholder="Property name" /></label><div className="form-row"><label>Email<input name="email" required type="email" placeholder="you@hotel.com" /></label><label>Phone<input name="phone" required type="tel" placeholder="+855" /></label></div><label>What do you need?<textarea name="message" required rows="4" defaultValue={interest ? `I'm interested in ${interest}.` : ""} placeholder="Products, quantity, branding, delivery timeline…" /></label><button className="button button-red" type="submit">Send request <ArrowRight size={18} /></button></form></>}
   </section></div>;
@@ -96,7 +109,8 @@ function SpecialCollections() {
 function ListPage({ type }) {
   const isCustom = type === "custom";
   const items = isCustom ? customLogoProjects : destinations;
-  return <><PageHero eyebrow={isCustom ? "Brand customisation" : "Cambodia network"} title={isCustom ? "Your identity, carried through every detail." : "Hospitality support across Cambodia."} summary={isCustom ? "A reconstructed directory of hotels, resorts and organisations featured in SDC’s custom-logo portfolio." : "The destinations and provinces represented in SDC’s original service portfolio."} count={`${items.length} entries`} /><section className="name-directory">{items.map((item, index) => <article key={item}><span>{String(index + 1).padStart(2, "0")}</span><h3>{item}</h3><SealCheck size={20} /></article>)}</section><section className="wide-cta"><div><p className="eyebrow light">Made for your property</p><h2>{isCustom ? "Add your mark to the guest experience." : "Ask about delivery to your destination."}</h2></div><button className="button button-light" onClick={() => goTo("contact")}>Talk to SDC <ArrowRight size={18} /></button></section></>;
+  const imageDirectory = isCustom ? "custom-projects/custom" : "destinations/destination";
+  return <><PageHero eyebrow={isCustom ? "Brand customisation" : "Cambodia network"} title={isCustom ? "Your identity, carried through every detail." : "Hospitality support across Cambodia."} summary={isCustom ? "Explore branded hospitality work produced for hotels, resorts and organisations in SDC’s original portfolio." : "See the destinations and provinces represented in SDC’s hospitality supply network."} count={`${items.length} entries`} /><section className={`visual-directory ${isCustom ? "custom-directory" : "destination-directory"}`}>{items.map((item, index) => { const itemNumber = String(index + 1).padStart(2, "0"); return <article key={item}><span className="directory-image"><img src={`/assets/${imageDirectory}-${itemNumber}.jpg`} alt={isCustom ? `${item} custom-logo project` : `${item} destination`} loading="lazy" /></span><div><span>{itemNumber}</span><h3>{item}</h3>{isCustom ? <SealCheck size={20} /> : <MapPin size={20} />}</div></article>; })}</section><section className="wide-cta"><div><p className="eyebrow light">Made for your property</p><h2>{isCustom ? "Add your mark to the guest experience." : "Ask about delivery to your destination."}</h2></div><button className="button button-light" onClick={() => goTo("contact")}>Talk to SDC <ArrowRight size={18} /></button></section></>;
 }
 
 function EventsPage() {
@@ -167,8 +181,14 @@ export function App() {
   const route = useHashRoute();
   const [quote, setQuote] = useState({ open: false, interest: "" });
   const openQuote = (interest = "") => setQuote({ open: true, interest });
+  useEffect(() => {
+    const product = route.page === "product" ? findProductBySlug(route.slug) : null;
+    const pageTitles = { home: "Hospitality, Elevated", products: "Products", custom: "Custom Hotel Logos", coverage: "Coverage Across Cambodia", promotions: "Promotions", events: "Events", education: "Education", careers: "Careers", contact: "Contact", terms: "Terms & Conditions" };
+    document.title = `${product?.name ?? pageTitles[route.page] ?? "Page not found"} | SDC Hotel Supply`;
+  }, [route]);
   const pages = { home: <HomePage onQuote={openQuote} />, products: <ProductsPage />, product: <ProductPage slug={route.slug} onQuote={openQuote} />, custom: <ListPage type="custom" />, coverage: <ListPage type="coverage" />, promotions: <PromotionsPage onQuote={openQuote} />, events: <EventsPage />, education: <EducationPage />, careers: <CareersPage />, contact: <ContactPage onQuote={openQuote} />, terms: <TermsPage />, "not-found": <NotFoundPage /> };
-  return <div className="site-shell"><Header activePage={route.page} onQuote={() => openQuote("")} /><main>{pages[route.page] ?? pages["not-found"]}</main><Footer /><QuoteModal isOpen={quote.open} interest={quote.interest} onClose={() => setQuote({ open: false, interest: "" })} /></div>;
+  const activeNavigationPage = route.page === "product" ? "products" : route.page;
+  return <div className="site-shell"><Header activePage={activeNavigationPage} onQuote={() => openQuote("")} /><main>{pages[route.page] ?? pages["not-found"]}</main><Footer /><QuoteModal isOpen={quote.open} interest={quote.interest} onClose={() => setQuote({ open: false, interest: "" })} /></div>;
 }
 
 export default App;

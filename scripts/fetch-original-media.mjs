@@ -3,7 +3,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { catalog, catalogCategories, eventArchive } from "../src/catalog.js";
+import {
+  catalog,
+  catalogCategories,
+  customLogoProjects,
+  destinations,
+  eventArchive,
+} from "../src/catalog.js";
 
 const sourceOrigin = "https://sdchotelsupply.com";
 const categorySourcePaths = {
@@ -47,10 +53,14 @@ async function saveAsJpeg(sourceUrl, outputPath, temporaryDirectory) {
 async function main() {
   const productDirectory = new URL("../public/assets/products/", import.meta.url);
   const eventDirectory = new URL("../public/assets/events/", import.meta.url);
+  const customDirectory = new URL("../public/assets/custom-projects/", import.meta.url);
+  const destinationDirectory = new URL("../public/assets/destinations/", import.meta.url);
   const temporaryDirectory = await mkdtemp(join(tmpdir(), "sdc-original-media-"));
 
   await mkdir(productDirectory, { recursive: true });
   await mkdir(eventDirectory, { recursive: true });
+  await mkdir(customDirectory, { recursive: true });
+  await mkdir(destinationDirectory, { recursive: true });
 
   try {
     for (const category of catalogCategories) {
@@ -80,6 +90,37 @@ async function main() {
       await saveAsJpeg(sourceUrl, new URL(`event-${String(index + 1).padStart(2, "0")}.jpg`, eventDirectory), temporaryDirectory);
     }
     console.log(`Saved ${eventImages.length} original event thumbnails`);
+
+    const visualDirectories = [
+      {
+        label: "custom-logo project",
+        sourcePath: "/en/product/customize-hotel-s-logo",
+        items: customLogoProjects,
+        directory: customDirectory,
+        filePrefix: "custom",
+      },
+      {
+        label: "destination",
+        sourcePath: "/en/product/cambodia-tourist-destination",
+        items: destinations,
+        directory: destinationDirectory,
+        filePrefix: "destination",
+      },
+    ];
+
+    for (const visualDirectory of visualDirectories) {
+      const html = await fetchText(visualDirectory.sourcePath);
+      const sourceImages = extractSourceImages(html, "products");
+      if (sourceImages.length !== visualDirectory.items.length) {
+        throw new Error(`${visualDirectory.label}: expected ${visualDirectory.items.length} images, found ${sourceImages.length}`);
+      }
+
+      for (const [index, sourceUrl] of sourceImages.entries()) {
+        const fileNumber = String(index + 1).padStart(2, "0");
+        await saveAsJpeg(sourceUrl, new URL(`${visualDirectory.filePrefix}-${fileNumber}.jpg`, visualDirectory.directory), temporaryDirectory);
+      }
+      console.log(`Saved ${sourceImages.length} original ${visualDirectory.label} thumbnails`);
+    }
   } finally {
     await rm(temporaryDirectory, { recursive: true, force: true });
   }
